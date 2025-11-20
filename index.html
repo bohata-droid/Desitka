@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Hra: Desítka</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding-top: 40px;
+    }
+
+    .game {
+      background: #ffffff;
+      padding: 24px 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      max-width: 520px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .cards-wrapper {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .cards {
+      display: flex;
+      gap: 12px;
+      margin: 12px 0 12px;
+    }
+
+    .card {
+      flex: 1;
+      background: #fafafa;
+      border-radius: 10px;
+      border: 2px solid #ddd;
+      text-align: center;
+      padding: 16px 0;
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 1;
+    }
+
+    .success-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      background: rgba(6, 95, 70, 0.95); /* tmavě zelená */
+      color: #fff;
+      display: none;        /* zobrazí se jen při úspěchu */
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      padding: 12px;
+      z-index: 5;
+    }
+
+    .success-overlay strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .success-overlay span {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .timer-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input {
+      cursor: pointer;
+    }
+
+    .timer-display {
+      font-weight: 600;
+    }
+
+    label[for="expression"] {
+      font-size: 14px;
+      display: block;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .keypad button {
+      padding: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .keypad button.operator {
+      font-weight: 600;
+    }
+
+    .keypad button.action {
+      background: #e5e7eb;
+      font-size: 14px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    button.check {
+      background: #2563eb;
+      color: white;
+    }
+
+    button.new {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .message {
+      margin-top: 14px;
+      font-size: 15px;
+      min-height: 22px;
+    }
+
+    .message.ok {
+      color: #16a34a;
+    }
+
+    .message.error {
+      color: #dc2626;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <h1>Vyjde 10?</h1>
+    <p class="subtitle">
+      Z těchto čtyř čísel vytvořte matematický výraz, který má výsledek <strong>10</strong>.<br>
+      Musíte použít <strong>všechny karty</strong>. Můžete je spojovat jako číslice do dvojmístných čísel (např. 1 a 4 → 14).
+    </p>
+
+    <div class="cards-wrapper">
+      <div class="cards" id="cards"></div>
+
+      <!-- zelené pole přes karty při úspěchu -->
+      <div class="success-overlay" id="successOverlay">
+        <div>
+          <strong>Správně! Výsledek je 10 🎉</strong>
+          <span>Klikněte pro pokračování.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- časovač a přepínače -->
+    <div class="timer-row">
+      <div class="timer-left">
+        <label class="toggle">
+          <input type="checkbox" id="timerToggle" checked>
+          <span>Časovač</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="keypadToggle" unchecked>
+          <span>Klávesnice</span>
+        </label>
+      </div>
+      <div class="timer-display" id="timerDisplay">Čas: 0:00</div>
+    </div>
+
+    <label for="expression">
+      Zapište výraz (použijte +, -, *, / a závorky):
+    </label>
+    <input type="text" id="expression" placeholder="např. (3+7) nebo 2*5">
+
+    <!-- Dotyková klávesnice -->
+    <div class="keypad" id="keypad">
+      <!-- řádek 1 -->
+      <button type="button" data-value="7">7</button>
+      <button type="button" data-value="8">8</button>
+      <button type="button" data-value="9">9</button>
+      <button type="button" class="operator" data-value="+">+</button>
+
+      <!-- řádek 2 -->
+      <button type="button" data-value="4">4</button>
+      <button type="button" data-value="5">5</button>
+      <button type="button" data-value="6">6</button>
+      <button type="button" class="operator" data-value="-">−</button>
+
+      <!-- řádek 3 -->
+      <button type="button" data-value="1">1</button>
+      <button type="button" data-value="2">2</button>
+      <button type="button" data-value="3">3</button>
+      <button type="button" class="operator" data-value="*">×</button>
+
+      <!-- řádek 4 -->
+      <button type="button" data-value="0">0</button>
+      <button type="button" data-value="(">(</button>
+      <button type="button" data-value=")">)</button>
+      <button type="button" class="operator" data-value="/">÷</button>
+
+      <!-- řádek 5 -->
+      <button type="button" class="action" data-action="clear">C</button>
+      <button type="button" class="action" data-action="backspace">⌫</button>
+      <button type="button" disabled></button>
+      <button type="button" disabled></button>
+    </div>
+
+    <div class="buttons">
+      <button class="check" id="checkBtn">Zkontrolovat</button>
+      <button class="new" id="newCardsBtn">Nové karty</button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+  </div>
+
+  <script>
+    let currentCards = [];
+
+    // proměnné pro časovač
+    let timerEnabled = true;
+    let timerInterval = null;
+    let startTime = null;
+
+    // klávesnice
+    let keypadEnabled = true;
+
+    // Vygeneruje 4 náhodná čísla 1–10
+    function generateCards() {
+      currentCards = [];
+      for (let i = 0; i < 4; i++) {
+        const n = Math.floor(Math.random() * 10) + 1; // 1..10
+        currentCards.push(n);
+      }
+      renderCards();
+      clearResult();
+
+      // vymazat vstup při nových kartách
+      const input = document.getElementById('expression');
+      input.value = '';
+
+      hideSuccessOverlay();
+      resetTimerForNewRound();
+    }
+
+    function renderCards() {
+      const cardsDiv = document.getElementById('cards');
+      cardsDiv.innerHTML = '';
+      currentCards.forEach(num => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.textContent = num;
+        cardsDiv.appendChild(div);
+      });
+    }
+
+    function clearResult() {
+      const msg = document.getElementById('message');
+      msg.textContent = '';
+      msg.className = 'message';
+    }
+
+    // ===== ČASOVAČ =====
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+
+      if (!timerEnabled) {
+        display.textContent = 'Časovač vypnutý';
+        return;
+      }
+      if (!startTime) {
+        display.textContent = 'Čas: 0:00';
+        return;
+      }
+
+      const elapsedMs = Date.now() - startTime;
+      const totalSec = Math.floor(elapsedMs / 1000);
+      const minutes = Math.floor(totalSec / 60);
+      const seconds = totalSec % 60;
+
+      display.textContent = 'Čas: ' + minutes + ':' + String(seconds).padStart(2, '0');
+    }
+
+    function startTimer() {
+      if (!timerEnabled) return;
+      stopTimer();
+      startTime = Date.now();
+      updateTimerDisplay();
+      timerInterval = setInterval(updateTimerDisplay, 100);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resetTimerForNewRound() {
+      const display = document.getElementById('timerDisplay');
+      if (!timerEnabled) {
+        stopTimer();
+        startTime = null;
+        display.textContent = 'Časovač vypnutý';
+      } else {
+        startTimer();
+      }
+    }
+
+    // ===== POUŽITÍ KARET =====
+
+    // multiset počítadlo
+    function getNumberCounts(nums) {
+      const counts = {};
+      nums.forEach(n => {
+        counts[n] = (counts[n] || 0) + 1;
+      });
+      return counts;
+    }
+
+    // Rekurzivně ověří, jestli lze čísla z výrazu složit ze všech karet.
+    // Karty musí být použity všechny (každá právě jednou).
+    // Karty lze:
+    //   - použít přímo jako číslo (např. karta 7 => číslo 7)
+    //   - nebo jako dvojici (d1, d2) z jednociferných karet 1..9 -> číslo 10*d1 + d2
+    function canMatchNumbersWithCards(exprNumbers, cardCounts) {
+      const nums = [...exprNumbers].sort((a, b) => b - a); // nejdřív větší
+
+      function helper(index, counts) {
+        if (index === nums.length) {
+          // použili jsme všechna čísla z výrazu, zbyly nějaké karty?
+          for (const v in counts) {
+            if (counts[v] > 0) return false;  // karta nevyužita -> neplatné
+          }
+          return true;
+        }
+
+        const target = nums[index];
+
+        // 1) pokus použít jednu kartu přesně rovnou cíli (např. karta 10 => číslo 10)
+        if (counts[target] && counts[target] > 0) {
+          counts[target]--;
+          if (helper(index + 1, counts)) return true;
+          counts[target]++; // backtrack
+        }
+
+        // 2) pokus složit dvojciferné číslo ze dvou jednociferných karet
+        if (target >= 10 && target <= 99) {
+          for (let d1 = 1; d1 <= 9; d1++) {
+            for (let d2 = 1; d2 <= 9; d2++) {
+              if (10 * d1 + d2 !== target) continue;
+
+              const need1 = (d1 === d2) ? 2 : 1;
+              if (!counts[d1] || counts[d1] < need1) continue;
+              if (d1 !== d2 && (!counts[d2] || counts[d2] < 1)) continue;
+
+              counts[d1] -= need1;
+              if (d1 !== d2) counts[d2] -= 1;
+
+              if (helper(index + 1, counts)) return true;
+
+              // backtrack
+              counts[d1] += need1;
+              if (d1 !== d2) counts[d2] += 1;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      return helper(0, { ...cardCounts });
+    }
+
+    // Zkontroluje, že hráč použil přesně všechny dostupné karty (včetně skládání dvojciferných čísel)
+    function usesOnlyCards(expression) {
+      const matches = expression.match(/\d+/g);
+      if (!matches) return false;
+
+      const exprNumbers = matches.map(x => parseInt(x, 10));
+      const cardCounts = getNumberCounts(currentCards);
+
+      return canMatchNumbersWithCards(exprNumbers, cardCounts);
+    }
+
+    // ===== KONTROLA VÝRAZU =====
+
+    function showSuccessOverlay() {
+      const overlay = document.getElementById('successOverlay');
+      overlay.style.display = 'flex';
+    }
+
+    function hideSuccessOverlay() {
+      const overlay = document.getElementById('successOverlay');
+      overlay.style.display = 'none';
+    }
+
+    function checkExpression() {
+      const input = document.getElementById('expression');
+      const msg = document.getElementById('message');
+      const expr = input.value.trim();
+
+      clearResult();
+      hideSuccessOverlay();
+
+      if (!expr) {
+        msg.textContent = 'Napiš nějaký výraz.';
+        msg.classList.add('error');
+        return;
+      }
+
+      // Povolíme jen čísla, + - * /, závorky a mezery (bez desetinné tečky)
+      const safeRegex = /^[0-9+\-*/()\s]+$/;
+      if (!safeRegex.test(expr)) {
+        msg.textContent = 'Výraz může obsahovat jen čísla, +, -, *, /, závorky a mezery.';
+        msg.classList.add('error');
+        return;
+      }
+
+      // Kontrola použití všech karet (včetně skládání)
+      if (!usesOnlyCards(expr)) {
+        msg.textContent = 'Musíte použít všechny karty (můžete je spojovat do dvojmístných čísel).';
+        msg.classList.add('error');
+        return;
+      }
+
+      let result;
+      try {
+        const fn = new Function('return (' + expr + ');');
+        result = fn();
+      } catch (e) {
+        msg.textContent = 'Výraz není platný. Zkuste to znovu.';
+        msg.classList.add('error');
+        return;
+      }
+
+      if (typeof result !== 'number' || !isFinite(result)) {
+        msg.textContent = 'Výraz nedává číselný výsledek.';
+        msg.classList.add('error');
+        return;
+      }
+
+      const EPS = 1e-9;
+      if (Math.abs(result - 10) < EPS) {
+        msg.classList.add('ok');
+        // zastavit časovač + nechat zobrazený finální čas
+        updateTimerDisplay();
+        stopTimer();
+        showSuccessOverlay();
+      } else {
+        msg.textContent = 'Bohužel, výsledek je ' + result + ', ne 10.';
+        msg.classList.add('error');
+      }
+    }
+
+    // ===== KLÁVESNICE =====
+
+    function initKeypad() {
+      const keypad = document.getElementById('keypad');
+      const input = document.getElementById('expression');
+
+      keypad.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        const value = btn.dataset.value;
+
+        if (action === 'clear') {
+          input.value = '';
+        } else if (action === 'backspace') {
+          input.value = input.value.slice(0, -1);
+        } else if (value) {
+          input.value += value;
+        }
+
+        input.focus();
+      });
+    }
+
+    function updateKeypadVisibility() {
+      const keypad = document.getElementById('keypad');
+      keypad.style.display = keypadEnabled ? 'grid' : 'none';
+    }
+
+    // ===== INIT PŘEPÍNAČŮ =====
+
+    function initTimerToggle() {
+      const toggle = document.getElementById('timerToggle');
+      timerEnabled = toggle.checked;
+
+      toggle.addEventListener('change', () => {
+        timerEnabled = toggle.checked;
+        if (!timerEnabled) {
+          stopTimer();
+          startTime = null;
+        } else {
+          // při zapnutí odstartujeme nové měření od aktuálního okamžiku
+          startTimer();
+        }
+        updateTimerDisplay();
+      });
+    }
+
+    function initKeypadToggle() {
+      const toggle = document.getElementById('keypadToggle');
+      keypadEnabled = toggle.checked;
+      updateKeypadVisibility();
+
+      toggle.addEventListener('change', () => {
+        keypadEnabled = toggle.checked;
+        updateKeypadVisibility();
+      });
+    }
+
+    function initSuccessOverlayClick() {
+      const overlay = document.getElementById('successOverlay');
+      overlay.addEventListener('click', () => {
+        hideSuccessOverlay();
+      });
+    }
+
+    function initGame() {
+      initKeypad();
+      initTimerToggle();
+      initKeypadToggle();
+      initSuccessOverlayClick();
+
+      document.getElementById('checkBtn').addEventListener('click', checkExpression);
+      document.getElementById('newCardsBtn').addEventListener('click', generateCards);
+      document.getElementById('expression').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          checkExpression();
+        }
+      });
+
+      generateCards(); // první sada karet + start časovače
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGame);
+    } else {
+      initGame();
+    }
+  </script>
+</body>
+</html>
