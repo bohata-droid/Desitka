@@ -47,14 +47,6 @@
       text-align: left;
     }
 
-    .subtitle {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: #555;
-      font-size: clamp(13px, 2vh, 16px);
-      text-align: left;
-    }
-
     /* === KARTY === */
 
     .cards-wrapper {
@@ -280,6 +272,22 @@
   background: #f9fafb;
   cursor: pointer;
 }
+/* Úvodní text bude na začátku skrytý */
+.subtitle {
+  display: none; /* Skrytý text na začátku */
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: clamp(13px, 2vh, 16px);
+  text-align: left;
+}
+
+/* Když je checkbox zaškrtnutý, pravidla budou viditelná */
+.subtitle.visible {
+  display: block; /* Zobrazí pravidla */
+}
+
+
 
   </style>
 </head>
@@ -288,7 +296,7 @@
     <h1>Vyjde 10?</h1>
     <p class="subtitle">
       Z těchto čtyř čísel vytvořte pomocí početních operací výraz, který má výsledek&nbsp;<strong>10</strong>.<br>
-      Musíte použít <strong>všechny karty</strong>. Můžete je spojovat jako číslice do dvojmístných čísel (např.&nbsp;1&nbsp;a&nbsp;4&nbsp;→&nbsp;14).
+      Musíte použít <strong>všechny karty</strong>. Můžete je spojovat jako číslice do dvojmístných čísel (např.&nbsp;1&nbsp;a&nbsp;4&nbsp;→&nbsp;14).<br>Výraz zapište do vstupního pole a dejte "Zkontrolovat", nebo vyřešte zpaměti a jen odklikněte "Mám". Nevyřešené úlohy si můžete zkopírovat do schránky a schovat na jindy.
     </p>
 
     <div class="cards-wrapper">
@@ -306,6 +314,10 @@
     <!-- časovač, přepínače a počitadla -->
     <div class="timer-row">
       <div class="timer-left">
+        <label class="toggle">
+          <input type="checkbox" id="rulesToggle" unchecked>
+          <span>Pravidla</span>
+        </label>
         <label class="toggle">
           <input type="checkbox" id="timerToggle" checked>
           <span>Časovač</span>
@@ -363,7 +375,7 @@
     <div class="buttons">
       <button class="check" id="checkBtn">Zkontrolovat</button>
       <button class="have" id="haveBtn">Mám</button>
-      <button class="new" id="newCardsBtn">Nové karty</button>
+      <button class="new" id="newCardsBtn">Jinou úlohu</button>
     </div>
 
     <div class="message" id="message"></div>
@@ -632,7 +644,7 @@
         msg.textContent = '';
         showSuccessOverlay();
       } else {
-        msg.textContent = 'Pokus „mám“ byl zaznamenán jako úspěšný.';
+        msg.textContent = 'Úloha byla započtena jako vyřešená.';
       }
     }
 
@@ -851,6 +863,18 @@
     } else {
       initGame();
     }
+// Funkce pro přepínání zobrazení pravidel (úvodního textu)
+document.getElementById('rulesToggle').addEventListener('change', function() {
+  const subtitle = document.querySelector('.subtitle');
+  
+  if (this.checked) {
+    subtitle.classList.add('visible');  // Zobrazí pravidla
+  } else {
+    subtitle.classList.remove('visible');     // Skryje pravidla
+  }
+});
+
+
   </script>
 </body>
 </html>
