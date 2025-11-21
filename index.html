@@ -44,7 +44,7 @@
       font-size: clamp(20px, 3vh, 28px);
       margin-top: 0;
       margin-bottom: 6px;
-      text-align: center;
+      text-align: left;
     }
 
     .subtitle {
@@ -52,7 +52,7 @@
       margin-bottom: 12px;
       color: #555;
       font-size: clamp(13px, 2vh, 16px);
-      text-align: center;
+      text-align: left;
     }
 
     /* === KARTY === */
@@ -69,6 +69,7 @@
       justify-content: space-between;
       margin: 10px 0 10px;
     }
+
 
     .card {
       flex: 1;
@@ -252,8 +253,8 @@
     }
 
     .message {
-      margin-top: 10px;
-      font-size: clamp(13px, 2vh, 16px);
+      margin: 10px;
+      font-size: clamp(13px, 4vh, 16px);
       min-height: 20px;
       text-align: center;
       flex: 0 0 auto;
@@ -268,17 +269,11 @@
     }
 
     
-    /* Kontejner pro tlačítka "Neúspěšné úlohy" a "Kopírovat neúspěšné úlohy" */
-.buttons-failed {
-  display: flex;
-  gap: 10px; /* mezera mezi tlačítky */
-  justify-content: center; /* vystředí tlačítka */
-  margin-top: 12px;
-}
 
 /* Tlačítka ve stejné velikosti jako ostatní tlačítka */
 .show-failed {
   font-size: clamp(12px, 2vh, 14px);
+  margin: 6px 0 0 0
   padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid #d1d5db;
@@ -292,8 +287,8 @@
   <div class="game">
     <h1>Vyjde 10?</h1>
     <p class="subtitle">
-      Z těchto čtyř čísel vytvořte matematický výraz, který má výsledek <strong>10</strong>.<br>
-      Musíte použít <strong>všechny karty</strong>. Můžete je spojovat jako číslice do dvojmístných čísel (např. 1 a 4 → 14).
+      Z těchto čtyř čísel vytvořte pomocí početních operací výraz, který má výsledek&nbsp;<strong>10</strong>.<br>
+      Musíte použít <strong>všechny karty</strong>. Můžete je spojovat jako číslice do dvojmístných čísel (např.&nbsp;1&nbsp;a&nbsp;4&nbsp;→&nbsp;14).
     </p>
 
     <div class="cards-wrapper">
@@ -372,14 +367,8 @@
     </div>
 
     <div class="message" id="message"></div>
-
-    <!-- Přidáme novou div pro tlačítka, která budou vedle sebe -->
-      <div class="buttons-failed">
-        <button class="show-failed" id="showFailedBtn">Neúspěšné úlohy</button>
-        <button class="show-failed" id="copyFailedBtn">Kopírovat neúspěšné úlohy</button>
-      </div>
-
-  </div>
+      <button class="show-failed" id="copyFailedBtn">Kopírovat neúspěšné úlohy do schránky</button>
+    </div>
 
   <script>
     let currentCards = [];
@@ -668,7 +657,7 @@
       hideSuccessOverlay();
 
       if (!expr) {
-        msg.textContent = 'Napiš nějaký výraz.';
+        msg.textContent = 'Napište nějaký výraz.';
         msg.classList.add('error');
         return;
       }
@@ -844,7 +833,6 @@
       document.getElementById('checkBtn').addEventListener('click', checkExpression);
       document.getElementById('haveBtn').addEventListener('click', handleHaveClick);
       document.getElementById('newCardsBtn').addEventListener('click', handleNewCards);
-      document.getElementById('showFailedBtn').addEventListener('click', showFailedPuzzles);
       document.getElementById('copyFailedBtn').addEventListener('click', copyFailedPuzzles);
 
       document.getElementById('expression').addEventListener('keydown', (e) => {
