@@ -4,206 +4,255 @@
   <meta charset="UTF-8">
   <title>Hra: Desítka</title>
   <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding-top: 40px;
-    }
+   /* === CELÁ STRÁNKA === */
 
-    .game {
-      background: #ffffff;
-      padding: 24px 28px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      max-width: 520px;
-      width: 100%;
-    }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;       /* nahoře */
+  height: 100vh;                 /* přesně výška okna */
+  width: 100vw;                  /* přesně šířka okna */
+  overflow: hidden;              /* nic mimo nezaškodí */
+  margin: 0;
+  padding: 0;
+}
 
-    h1 {
-      font-size: 24px;
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
+/* === HLAVNÍ BLOK HRY === */
 
-    .subtitle {
-      margin-top: 0;
-      margin-bottom: 16px;
-      color: #555;
-      font-size: 14px;
-    }
+.game {
+  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 
-    .cards-wrapper {
-      position: relative;
-      margin-bottom: 8px;
-    }
+  width: min(600px, 95vw);       /* přizpůsobení šířce okna */
+  height: auto;
 
-    .cards {
-      display: flex;
-      gap: 12px;
-      margin: 12px 0 12px;
-    }
+  max-height: 100vh;             /* nikdy nepřesahuje výšku okna */
+  overflow-y: auto;              /* pokud je okno malé, scroll uvnitř */
 
-    .card {
-      flex: 1;
-      background: #fafafa;
-      border-radius: 10px;
-      border: 2px solid #ddd;
-      text-align: center;
-      padding: 16px 0;
-      font-size: 24px;
-      font-weight: bold;
-      z-index: 1;
-    }
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-    .success-overlay {
-      position: absolute;
-      inset: 0;
-      border-radius: 14px;
-      background: rgba(6, 95, 70, 0.95); /* tmavě zelená */
-      color: #fff;
-      display: none;        /* zobrazí se jen při úspěchu */
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      padding: 12px;
-      z-index: 5;
-    }
 
-    .success-overlay strong {
-      display: block;
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
+/* === NADPISY === */
 
-    .success-overlay span {
-      font-size: 14px;
-      opacity: 0.9;
-    }
+h1 {
+  font-size: clamp(20px, 3vh, 28px);
+  margin-top: 0;
+  margin-bottom: 6px;
+  text-align: center;
+}
 
-    .timer-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      font-size: 13px;
-      color: #374151;
-    }
+.subtitle {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: clamp(13px, 2vh, 16px);
+  text-align: center;
+}
 
-    .timer-left {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
 
-    .toggle {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      user-select: none;
-    }
+/* === KARTY === */
 
-    .toggle input {
-      cursor: pointer;
-    }
+.cards-wrapper {
+  position: relative;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
+}
 
-    .timer-display {
-      font-weight: 600;
-    }
+.cards {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin: 10px 0 10px;
+}
 
-    label[for="expression"] {
-      font-size: 14px;
-      display: block;
-      margin-bottom: 6px;
-      color: #333;
-    }
+.card {
+  flex: 1;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 2px solid #ddd;
 
-    input[type="text"] {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+  font-size: clamp(22px, 4vh, 36px);
+  font-weight: bold;
 
-    .keypad {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-top: 12px;
-    }
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-    .keypad button {
-      padding: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      font-size: 16px;
-      cursor: pointer;
-    }
+  aspect-ratio: 2.2 / 3.5;        /* karta na výšku */
+  padding: 0;
+}
 
-    .keypad button.operator {
-      font-weight: 600;
-    }
 
-    .keypad button.action {
-      background: #e5e7eb;
-      font-size: 14px;
-    }
+/* === OVERLAY PŘI ÚSPĚCHU === */
 
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-    }
+.success-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: rgba(6, 95, 70, 0.95);
+  color: #fff;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  padding: 12px;
+  z-index: 5;
+}
 
-    button {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 600;
-    }
+.success-overlay strong {
+  display: block;
+  font-size: clamp(18px, 3vh, 24px);
+  margin-bottom: 4px;
+}
 
-    button.check {
-      background: #2563eb;
-      color: white;
-    }
+.success-overlay span {
+  font-size: clamp(12px, 2vh, 16px);
+  opacity: 0.9;
+}
 
-    button.new {
-      background: #e5e7eb;
-      color: #111827;
-    }
 
-    .message {
-      margin-top: 14px;
-      font-size: 15px;
-      min-height: 22px;
-    }
+/* === TIMER + PŘEPÍNAČE === */
 
-    .message.ok {
-      color: #16a34a;
-    }
+.timer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: clamp(12px, 2vh, 15px);
+  color: #374151;
+  flex: 0 0 auto;
+}
 
-    .message.error {
-      color: #dc2626;
-    }
+.timer-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-    .note {
-      margin-top: 12px;
-      font-size: 12px;
-      color: #6b7280;
-    }
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input {
+  cursor: pointer;
+}
+
+.timer-display {
+  font-weight: 600;
+}
+
+
+/* === VSTUPNÍ POLE === */
+
+label[for="expression"] {
+  font-size: clamp(13px, 2vh, 16px);
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+  flex: 0 0 auto;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: clamp(14px, 2.2vh, 18px);
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+
+/* === KLÁVESNICE === */
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+  flex: 0 0 auto;
+}
+
+.keypad button {
+  padding: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: clamp(14px, 2.2vh, 18px);
+  cursor: pointer;
+}
+
+.keypad button.operator {
+  font-weight: 600;
+}
+
+.keypad button.action {
+  background: #e5e7eb;
+  font-size: clamp(12px, 2vh, 15px);
+}
+
+
+/* === TLAČÍTKA === */
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex: 0 0 auto;
+}
+
+button {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(14px, 2.2vh, 18px);
+  font-weight: 600;
+}
+
+button.check {
+  background: #2563eb;
+  color: white;
+}
+
+button.new {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+
+/* === INFORMACE / CHYBY === */
+
+.message {
+  margin-top: 10px;
+  font-size: clamp(13px, 2vh, 16px);
+  min-height: 20px;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.message.ok {
+  color: #16a34a;
+}
+
+.message.error {
+  color: #dc2626;
+}
+
   </style>
 </head>
 <body>
@@ -234,7 +283,7 @@
           <span>Časovač</span>
         </label>
         <label class="toggle">
-          <input type="checkbox" id="keypadToggle" unchecked>
+          <input type="checkbox" id="keypadToggle" checked>
           <span>Klávesnice</span>
         </label>
       </div>
@@ -285,7 +334,6 @@
     </div>
 
     <div class="message" id="message"></div>
-
   </div>
 
   <script>
