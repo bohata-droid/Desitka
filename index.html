@@ -267,16 +267,25 @@
       color: #dc2626;
     }
 
-    .show-failed {
-      margin-top: 8px;
-      align-self: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      background: #f9fafb;
-      cursor: pointer;
-      font-size: clamp(12px, 2vh, 14px);
-    }
+    
+    /* Kontejner pro tlačítka "Neúspěšné úlohy" a "Kopírovat neúspěšné úlohy" */
+.buttons-failed {
+  display: flex;
+  gap: 10px; /* mezera mezi tlačítky */
+  justify-content: center; /* vystředí tlačítka */
+  margin-top: 12px;
+}
+
+/* Tlačítka ve stejné velikosti jako ostatní tlačítka */
+.show-failed {
+  font-size: clamp(12px, 2vh, 14px);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
   </style>
 </head>
 <body>
@@ -364,7 +373,12 @@
 
     <div class="message" id="message"></div>
 
-    <button class="show-failed" id="showFailedBtn">Neúspěšné úlohy</button>
+    <!-- Přidáme novou div pro tlačítka, která budou vedle sebe -->
+      <div class="buttons-failed">
+        <button class="show-failed" id="showFailedBtn">Neúspěšné úlohy</button>
+        <button class="show-failed" id="copyFailedBtn">Kopírovat neúspěšné úlohy</button>
+      </div>
+
   </div>
 
   <script>
@@ -735,6 +749,24 @@
       alert('Neúspěšné úlohy:\n\n' + lines.join('\n'));
     }
 
+    // ===== KOPÍROVÁNÍ NEÚSPĚŠNÝCH ÚLOH DO SCHRÁNKY =====
+
+    function copyFailedPuzzles() {
+      if (!failedPuzzles.length) {
+        alert('Žádné neúspěšné úlohy ke zkopírování.');
+        return;
+      }
+
+      let lines = failedPuzzles.map((cards, idx) => {
+        return (idx + 1) + '. ' + cards.join(', ');
+      });
+
+      const textToCopy = 'Neúspěšné úlohy:\n\n' + lines.join('\n');
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('Neúspěšné úlohy byly zkopírovány do schránky.');
+      });
+    }
+
     // ===== KLÁVESNICE =====
 
     function initKeypad() {
@@ -813,6 +845,7 @@
       document.getElementById('haveBtn').addEventListener('click', handleHaveClick);
       document.getElementById('newCardsBtn').addEventListener('click', handleNewCards);
       document.getElementById('showFailedBtn').addEventListener('click', showFailedPuzzles);
+      document.getElementById('copyFailedBtn').addEventListener('click', copyFailedPuzzles);
 
       document.getElementById('expression').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
